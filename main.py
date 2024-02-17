@@ -1,3 +1,4 @@
+import os
 import cv2
 import easyocr
 import numpy as np
@@ -9,7 +10,37 @@ from kivy.uix.button import Button
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
-import os
+from kivy.uix.textinput import TextInput
+from kivy.uix.screenmanager import ScreenManager, Screen
+
+class LoginScreen(Screen):
+    def __init__(self, **kwargs):
+        super(LoginScreen, self).__init__(**kwargs)
+        layout = BoxLayout(orientation='vertical')
+        self.username = TextInput(hint_text='Username', multiline=False)
+        self.password = TextInput(hint_text='Password', multiline=False, password=True)
+        self.login_button = Button(text='Login')
+        self.login_button.bind(on_press=self.validate_user)
+        layout.add_widget(self.username)
+        layout.add_widget(self.password)
+        layout.add_widget(self.login_button)
+        self.add_widget(layout)
+
+    def validate_user(self, instance):
+        username = self.username.text
+        password = self.password.text
+        # Add your authentication logic here
+        if username == 'admin' and password == 'admin':  # This is just a placeholder for the actual authentication logic
+            self.manager.current = 'main'
+
+class MainScreen(Screen):
+    # This is where your main application code goes
+    def __init__(self, **kwargs):
+        super(MainScreen, self).__init__(**kwargs)
+        self.name = 'main'
+        for widget in kwargs.get('children', []):
+            self.add_widget(widget)
+    
 
 class OCRApp(App):
 
@@ -37,12 +68,12 @@ class OCRApp(App):
         self.ocr_button.bind(on_press=self.run_ocr)
         layout.add_widget(self.ocr_button)
 
-        # File chooser for selecting an image
-        # self.file_chooser = FileChooserListView()
-        # self.file_chooser.path = '.'  # Set the initial path
-        # layout.add_widget(self.file_chooser)
-        
-        return layout
+        # Create the screen manager and add the login and main screens
+        sm = ScreenManager()
+        sm.add_widget(LoginScreen(name='login'))
+        sm.add_widget(MainScreen(name='main', children=[layout]))
+
+        return sm
 
     def select_image(self, instance):
         # Create and open file chooser
