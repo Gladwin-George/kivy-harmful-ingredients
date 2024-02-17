@@ -1,8 +1,9 @@
 import os
+import csv
 import cv2
+import sqlite3
 import easyocr
 import numpy as np
-import csv
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -12,26 +13,70 @@ from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
 from kivy.uix.textinput import TextInput
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.properties import ObjectProperty
+
+
+
 
 class LoginScreen(Screen):
+
+    user_manager = ObjectProperty(None)
+
+    def register_user(self, instance):
+        self.manager.current = 'register'
+
     def __init__(self, **kwargs):
         super(LoginScreen, self).__init__(**kwargs)
+        self.user_manager = kwargs.get('user_manager')
         layout = BoxLayout(orientation='vertical')
         self.username = TextInput(hint_text='Username', multiline=False)
         self.password = TextInput(hint_text='Password', multiline=False, password=True)
         self.login_button = Button(text='Login')
         self.login_button.bind(on_press=self.validate_user)
+        self.register_button = Button(text='Register')
+        self.register_button.bind(on_press=self.register_user)
         layout.add_widget(self.username)
         layout.add_widget(self.password)
         layout.add_widget(self.login_button)
+        layout.add_widget(self.register_button)
         self.add_widget(layout)
 
     def validate_user(self, instance):
         username = self.username.text
         password = self.password.text
-        # Add your authentication logic here
-        if username == 'admin' and password == 'admin':  # This is just a placeholder for the actual authentication logic
+        if self.user_manager.validate_user(username, password):
             self.manager.current = 'main'
+        else:
+            print("Invalid username or password")
+
+            
+
+
+class RegisterScreen(Screen):
+
+    user_manager = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        super(RegisterScreen, self).__init__(**kwargs)
+        self.user_manager = kwargs.get('user_manager')
+        layout = BoxLayout(orientation='vertical')
+        self.username = TextInput(hint_text='Username', multiline=False)
+        self.password = TextInput(hint_text='Password', multiline=False, password=True)
+        self.register_button = Button(text='Register')
+        self.register_button.bind(on_press=self.register_user)
+        layout.add_widget(self.username)
+        layout.add_widget(self.password)
+        layout.add_widget(self.register_button)
+        self.add_widget(layout)
+
+    def register_user(self, instance):
+        username = self.username.text
+        password = self.password.text
+        self.user_manager.register_user(username, password)
+        self.manager.current = 'login'
+
+
+
 
 class MainScreen(Screen):
     # This is where your main application code goes
@@ -42,6 +87,26 @@ class MainScreen(Screen):
             self.add_widget(widget)
     
 
+
+
+class UserManager:
+    def __init__(self, db_path):
+        self.db_path = db_path
+        self.conn = sqlite3.connect(db_path)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT)")
+
+    def register_user(self, username, password):
+        self.cursor.execute("INSERT INTO users VALUES (?, ?)", (username, password))
+        self.conn.commit()
+
+    def validate_user(self, username, password):
+        self.cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+        return self.cursor.fetchone() is not None
+
+
+
+
 class OCRApp(App):
 
     def build(self):
@@ -49,6 +114,13 @@ class OCRApp(App):
         Window.size = (360, 640)  # Set window size for mobile dimensions
 
         layout = BoxLayout(orientation='vertical')
+
+        user_manager = UserManager('users.db')
+
+        sm = ScreenManager()
+        sm.add_widget(LoginScreen(name='login', user_manager=user_manager))
+        sm.add_widget(RegisterScreen(name='register', user_manager=user_manager))
+
         
         # Create a label for displaying OCR results
         self.result_scrollview = ScrollView(size_hint=(1, 0.6))
@@ -68,9 +140,7 @@ class OCRApp(App):
         self.ocr_button.bind(on_press=self.run_ocr)
         layout.add_widget(self.ocr_button)
 
-        # Create the screen manager and add the login and main screens
-        sm = ScreenManager()
-        sm.add_widget(LoginScreen(name='login'))
+        # Add the main screen to the screen manager
         sm.add_widget(MainScreen(name='main', children=[layout]))
 
         return sm
@@ -141,6 +211,10 @@ class OCRApp(App):
   
     def _update_scroll_height(self, instance, value):
         self.result_scrollview.height = self.result_label.texture_size[1]
+
+
+
+
 
 if __name__ == "__main__":
     OCRApp().run()
