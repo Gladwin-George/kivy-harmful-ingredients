@@ -8,23 +8,31 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
 
 class OCRApp(App):
 
     def build(self):
+        
+        Window.size = (360, 640)  # Set window size for mobile dimensions
+
         layout = BoxLayout(orientation='vertical')
         
         # Create a label for displaying OCR results
-        self.result_label = Label(text="OCR Results will be displayed here")
-        layout.add_widget(self.result_label)
-        
+        self.result_scrollview = ScrollView(size_hint=(1, 0.6))
+        self.result_label = Label(text="OCR Results will be displayed here", size_hint_y=None, valign='top', halign='left')
+        self.result_label.bind(width=lambda instance, value: setattr(self.result_label, 'text_size', (value, None)))
+        self.result_label.bind(texture_size=self.result_label.setter('size'))
+        self.result_scrollview.add_widget(self.result_label)
+        layout.add_widget(self.result_scrollview)
+                    
         # Create a button for selecting an image
-        self.select_image_button = Button(text="Select Image")
+        self.select_image_button = Button(text="Select Image", size_hint=(1, 0.2))
         self.select_image_button.bind(on_press=self.select_image)
         layout.add_widget(self.select_image_button)
 
         # Create a button for triggering OCR
-        self.ocr_button = Button(text="Run OCR")
+        self.ocr_button = Button(text="Run OCR", size_hint=(1, 0.2))
         self.ocr_button.bind(on_press=self.run_ocr)
         layout.add_widget(self.ocr_button)
 
@@ -78,15 +86,19 @@ class OCRApp(App):
 
         # Output the found harmful ingredients along with their descriptions
         if found_harmful_ingredients:
-            result_text = "\nHarmful Ingredients Detected:\n"
+            result_text = "\nHarmful Ingredients Detected:\n \n"
             for ingredient_name, description in found_harmful_ingredients:
-                result_text += f"- Ingredient: {ingredient_name}\n  => Description: {description}\n"
+                result_text += f"- Ingredient: {ingredient_name}\n  => Description: {description}\n \n"
+                print(f"Found harmful ingredient: {ingredient_name}")
         else:
             result_text = "No harmful ingredients detected."
         
         # Update the label with OCR results
         self.result_label.text = result_text
         print("Harmful ingredients detection completed.")
+  
+    def _update_scroll_height(self, instance, value):
+        self.result_scrollview.height = self.result_label.texture_size[1]
 
 if __name__ == "__main__":
     OCRApp().run()
