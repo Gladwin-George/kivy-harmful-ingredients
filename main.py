@@ -9,6 +9,7 @@ from kivy.uix.button import Button
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
+import os
 
 class OCRApp(App):
 
@@ -37,22 +38,32 @@ class OCRApp(App):
         layout.add_widget(self.ocr_button)
 
         # File chooser for selecting an image
-        self.file_chooser = FileChooserListView()
-        self.file_chooser.path = '.'  # Set the initial path
-        layout.add_widget(self.file_chooser)
+        # self.file_chooser = FileChooserListView()
+        # self.file_chooser.path = '.'  # Set the initial path
+        # layout.add_widget(self.file_chooser)
         
         return layout
 
     def select_image(self, instance):
-        # Open file chooser
-        self.file_chooser.bind(on_submit=self.load_image)
+        # Create and open file chooser
+        self.file_chooser = FileChooserListView()
+        self.file_chooser.path = '.'  # Set the initial path
         self.file_chooser.filters = ["*.jpg", "*.png", "*.jpeg"]
+        self.file_chooser.bind(on_submit=self.load_image)
+        self.select_image_button.parent.add_widget(self.file_chooser)  # Add file chooser to layout
 
     def load_image(self, instance, selection, touch):
         # Load selected image
         selected_file = selection[0]
         self.image_path = selected_file
+        selected_file_name = os.path.basename(selected_file)  # Get the base name of the selected file
         print(f"Image '{selected_file}' selected successfully.")
+
+        # Update the label with the selected image message
+        self.result_label.text = f"Image '{selected_file_name}' selected successfully."
+
+        # Remove file chooser from layout
+        self.select_image_button.parent.remove_widget(self.file_chooser)
 
     def run_ocr(self, instance):
         try:
