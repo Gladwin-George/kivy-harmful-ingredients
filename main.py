@@ -15,8 +15,9 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import ObjectProperty
 from kivy.uix.anchorlayout import AnchorLayout
-
+from kivy.uix.spinner import Spinner
 from kivy.core.window import Window
+
 
 
 
@@ -69,15 +70,35 @@ class RegisterScreen(Screen):
         self.user_manager = kwargs.get('user_manager')
 
         anchor_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        layout = BoxLayout(orientation='vertical', size_hint=(0.5, 0.3), spacing=20)
+        layout = BoxLayout(orientation='vertical', spacing=20, padding=[20, 100, 20, 100])
 
         self.username = TextInput(hint_text='Username', multiline=False)
         self.password = TextInput(hint_text='Password', multiline=False, password=True)
+        self.age = TextInput(hint_text='Age', multiline=False, input_filter='int')
+        self.allergies = TextInput(hint_text='Allergies', multiline=False)
+        self.obese = Spinner(text='Obese?', values=('Yes', 'No'))
+        self.diabetes = Spinner(text='Diabetes?', values=('Yes', 'No'))
+        self.blood_pressure = Spinner(text='Blood Pressure?', values=('Low', 'Medium', 'High'))
+        self.cholesterol = Spinner(text='Cholesterol?', values=('Yes', 'No'))
+        self.kidney_problem = Spinner(text='Kidney Problem?', values=('Yes', 'No'))
+        self.heart_problem = Spinner(text='Heart Problem?', values=('Yes', 'No'))
+        self.asthma = Spinner(text='Asthma?', values=('Yes', 'No'))
+        self.fatty_liver = Spinner(text='Fatty Liver?', values=('Yes', 'No'))
         self.register_button = Button(text='Register',background_color='#0096FF', background_normal="")
         self.register_button.bind(on_press=self.register_user)
 
         layout.add_widget(self.username)
         layout.add_widget(self.password)
+        layout.add_widget(self.age)
+        layout.add_widget(self.allergies)
+        layout.add_widget(self.obese)
+        layout.add_widget(self.diabetes)
+        layout.add_widget(self.blood_pressure)
+        layout.add_widget(self.cholesterol)
+        layout.add_widget(self.kidney_problem)
+        layout.add_widget(self.heart_problem)
+        layout.add_widget(self.asthma)
+        layout.add_widget(self.fatty_liver)
         layout.add_widget(self.register_button)
 
         anchor_layout.add_widget(layout)
@@ -86,7 +107,17 @@ class RegisterScreen(Screen):
     def register_user(self, instance):
         username = self.username.text
         password = self.password.text
-        self.user_manager.register_user(username, password)
+        age = self.age.text
+        allergies = self.allergies.text
+        obese = self.obese.text
+        diabetes = self.diabetes.text
+        blood_pressure = self.blood_pressure.text
+        cholesterol = self.cholesterol.text
+        kidney_problem = self.kidney_problem.text
+        heart_problem = self.heart_problem.text
+        asthma = self.asthma.text
+        fatty_liver = self.fatty_liver.text
+        self.user_manager.register_user(username, password, age, allergies, obese, diabetes, blood_pressure, cholesterol, kidney_problem, heart_problem, asthma, fatty_liver)
         self.manager.current = 'login'
 
 
@@ -108,10 +139,28 @@ class UserManager:
         self.db_path = db_path
         self.conn = sqlite3.connect(db_path)
         self.cursor = self.conn.cursor()
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT)")
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                username TEXT, 
+                password TEXT, 
+                age INTEGER, 
+                allergies TEXT, 
+                obese TEXT, 
+                diabetes TEXT, 
+                blood_pressure TEXT, 
+                cholesterol TEXT, 
+                kidney_problem TEXT, 
+                heart_problem TEXT, 
+                asthma TEXT, 
+                fatty_liver TEXT
+            )
+        """)
 
-    def register_user(self, username, password):
-        self.cursor.execute("INSERT INTO users VALUES (?, ?)", (username, password))
+    def register_user(self, username, password, age, allergies, obese, diabetes, blood_pressure, cholesterol, kidney_problem, heart_problem, asthma, fatty_liver):
+        self.cursor.execute("""
+            INSERT INTO users 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (username, password, age, allergies, obese, diabetes, blood_pressure, cholesterol, kidney_problem, heart_problem, asthma, fatty_liver))
         self.conn.commit()
 
     def validate_user(self, username, password):
