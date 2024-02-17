@@ -14,7 +14,9 @@ from kivy.core.window import Window
 from kivy.uix.textinput import TextInput
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import ObjectProperty
+from kivy.uix.anchorlayout import AnchorLayout
 
+from kivy.core.window import Window
 
 
 
@@ -28,18 +30,25 @@ class LoginScreen(Screen):
     def __init__(self, **kwargs):
         super(LoginScreen, self).__init__(**kwargs)
         self.user_manager = kwargs.get('user_manager')
-        layout = BoxLayout(orientation='vertical')
+
+        anchor_layout = AnchorLayout(anchor_x='center', anchor_y='center')
+        layout = BoxLayout(orientation='vertical', size_hint=(0.5, 0.3), spacing=20)
+
         self.username = TextInput(hint_text='Username', multiline=False)
         self.password = TextInput(hint_text='Password', multiline=False, password=True)
-        self.login_button = Button(text='Login')
+
+        self.login_button = Button(text='Login',background_color='#0096FF', background_normal="")
         self.login_button.bind(on_press=self.validate_user)
-        self.register_button = Button(text='Register')
+        self.register_button = Button(text='Register',background_color='#0096FF', background_normal="")
         self.register_button.bind(on_press=self.register_user)
+        
         layout.add_widget(self.username)
         layout.add_widget(self.password)
         layout.add_widget(self.login_button)
         layout.add_widget(self.register_button)
-        self.add_widget(layout)
+
+        anchor_layout.add_widget(layout)
+        self.add_widget(anchor_layout)
 
     def validate_user(self, instance):
         username = self.username.text
@@ -48,7 +57,6 @@ class LoginScreen(Screen):
             self.manager.current = 'main'
         else:
             print("Invalid username or password")
-
             
 
 
@@ -59,15 +67,21 @@ class RegisterScreen(Screen):
     def __init__(self, **kwargs):
         super(RegisterScreen, self).__init__(**kwargs)
         self.user_manager = kwargs.get('user_manager')
-        layout = BoxLayout(orientation='vertical')
+
+        anchor_layout = AnchorLayout(anchor_x='center', anchor_y='center')
+        layout = BoxLayout(orientation='vertical', size_hint=(0.5, 0.3), spacing=20)
+
         self.username = TextInput(hint_text='Username', multiline=False)
         self.password = TextInput(hint_text='Password', multiline=False, password=True)
-        self.register_button = Button(text='Register')
+        self.register_button = Button(text='Register',background_color='#0096FF', background_normal="")
         self.register_button.bind(on_press=self.register_user)
+
         layout.add_widget(self.username)
         layout.add_widget(self.password)
         layout.add_widget(self.register_button)
-        self.add_widget(layout)
+
+        anchor_layout.add_widget(layout)
+        self.add_widget(anchor_layout)
 
     def register_user(self, instance):
         username = self.username.text
@@ -112,8 +126,9 @@ class OCRApp(App):
     def build(self):
         
         Window.size = (360, 640)  # Set window size for mobile dimensions
+        Window.clearcolor = (1, 1, 1, 1)
 
-        layout = BoxLayout(orientation='vertical')
+        layout = BoxLayout(orientation='vertical', padding=[20, 20, 20, 120], spacing=20)
 
         user_manager = UserManager('users.db')
 
@@ -124,9 +139,10 @@ class OCRApp(App):
         
         # Create a label for displaying OCR results
         self.result_scrollview = ScrollView(size_hint=(1, 0.6))
-        self.result_label = Label(text="OCR Results will be displayed here", size_hint_y=None, valign='top', halign='left')
+        self.result_label = Label(text="OCR Results will be displayed here", size_hint_y=None, valign='top', halign='left',color=[0, 0, 0, 1])
         self.result_label.bind(width=lambda instance, value: setattr(self.result_label, 'text_size', (value, None)))
         self.result_label.bind(texture_size=self.result_label.setter('size'))
+
         self.result_scrollview.add_widget(self.result_label)
         layout.add_widget(self.result_scrollview)
                     
@@ -136,7 +152,7 @@ class OCRApp(App):
         layout.add_widget(self.select_image_button)
 
         # Create a button for triggering OCR
-        self.ocr_button = Button(text="Run OCR", size_hint=(1, 0.2))
+        self.ocr_button = Button(text="Run OCR", size_hint=(1, 0.2), background_color='#0096FF', background_normal="")
         self.ocr_button.bind(on_press=self.run_ocr)
         layout.add_widget(self.ocr_button)
 
