@@ -61,6 +61,9 @@ class LoginScreen(Screen):
             
 
 
+from kivy.uix.checkbox import CheckBox
+from kivy.graphics import Color, Rectangle
+
 class RegisterScreen(Screen):
 
     user_manager = ObjectProperty(None)
@@ -70,20 +73,35 @@ class RegisterScreen(Screen):
         self.user_manager = kwargs.get('user_manager')
 
         anchor_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        layout = BoxLayout(orientation='vertical', spacing=20, padding=[20, 100, 20, 100])
+        layout = BoxLayout(orientation='vertical', spacing=20, padding=[40, 40, 40, 50])
+
+        # Add these lines to change the background color
+        with layout.canvas.before:
+            Color(0, 74/255, 173/255, 1)   # Set the color (RGB and alpha)
+            self.rect = Rectangle(size=layout.size, pos=layout.pos)
+        layout.bind(size=self._update_rect, pos=self._update_rect)
+
+        #
 
         self.username = TextInput(hint_text='Username', multiline=False)
         self.password = TextInput(hint_text='Password', multiline=False, password=True)
         self.age = TextInput(hint_text='Age', multiline=False, input_filter='int')
-        self.allergies = TextInput(hint_text='Allergies', multiline=False)
-        self.obese = Spinner(text='Obese?', values=('Yes', 'No'))
-        self.diabetes = Spinner(text='Diabetes?', values=('Yes', 'No'))
-        self.blood_pressure = Spinner(text='Blood Pressure?', values=('Low', 'Medium', 'High'))
-        self.cholesterol = Spinner(text='Cholesterol?', values=('Yes', 'No'))
-        self.kidney_problem = Spinner(text='Kidney Problem?', values=('Yes', 'No'))
-        self.heart_problem = Spinner(text='Heart Problem?', values=('Yes', 'No'))
-        self.asthma = Spinner(text='Asthma?', values=('Yes', 'No'))
-        self.fatty_liver = Spinner(text='Fatty Liver?', values=('Yes', 'No'))
+        self.allergies = TextInput(hint_text='Allergies (type no if you dont have allergies)', multiline=False)
+
+        label = Label(text='Fill these questions to help us to know you better', color=[1, 1, 1, 1])
+        layout.add_widget(label)
+
+
+        # Create a BoxLayout for each question
+        self.obese = self.create_question('obese')
+        self.diabetes = self.create_question('diabetes')
+        self.blood_pressure = self.create_question('blood pressure')
+        self.cholesterol = self.create_question('cholesterol')
+        self.fatty_liver = self.create_question('Fatty liver')
+        self.kidney_problem = self.create_question('Kidney problem')
+        self.heart_problem = self.create_question('Heart problem')
+        self.asthma = self.create_question('Asthma')
+
         self.register_button = Button(text='Register',background_color='#0096FF', background_normal="")
         self.register_button.bind(on_press=self.register_user)
 
@@ -95,33 +113,55 @@ class RegisterScreen(Screen):
         layout.add_widget(self.diabetes)
         layout.add_widget(self.blood_pressure)
         layout.add_widget(self.cholesterol)
+        layout.add_widget(self.fatty_liver)
         layout.add_widget(self.kidney_problem)
         layout.add_widget(self.heart_problem)
         layout.add_widget(self.asthma)
-        layout.add_widget(self.fatty_liver)
+
         layout.add_widget(self.register_button)
 
         anchor_layout.add_widget(layout)
         self.add_widget(anchor_layout)
 
+    def _update_rect(self, instance, value):
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
+
+
+    def create_question(self, question_text):
+        layout = BoxLayout(orientation='vertical',spacing=20)  # Change this line
+        layout.add_widget(Label(text=question_text, color=[1, 1, 1, 1]))
+        yes_no_layout = BoxLayout(orientation='horizontal')  # Add this line
+
+
+        yes_checkbox = CheckBox(group=question_text)
+        no_checkbox = CheckBox(group=question_text)
+
+        yes_no_layout.add_widget(Label(text='Yes', color=[1, 1, 1, 1]))  # Add label for 'Yes'
+        yes_no_layout.add_widget(yes_checkbox)
+        yes_no_layout.add_widget(Label(text='No', color=[1, 1, 1, 1]))  # Add label for 'No'
+        yes_no_layout.add_widget(no_checkbox)
+
+        layout.add_widget(yes_no_layout)  # Add this line
+        setattr(self, question_text.lower().replace(' ', '_') + '_yes', yes_checkbox)
+        setattr(self, question_text.lower().replace(' ', '_') + '_no', no_checkbox)
+        return layout
+
     def register_user(self, instance):
-        username = self.username.text
-        password = self.password.text
-        age = self.age.text
-        allergies = self.allergies.text
-        obese = self.obese.text
-        diabetes = self.diabetes.text
-        blood_pressure = self.blood_pressure.text
-        cholesterol = self.cholesterol.text
-        kidney_problem = self.kidney_problem.text
-        heart_problem = self.heart_problem.text
-        asthma = self.asthma.text
-        fatty_liver = self.fatty_liver.text
-        self.user_manager.register_user(username, password, age, allergies, obese, diabetes, blood_pressure, cholesterol, kidney_problem, heart_problem, asthma, fatty_liver)
-        self.manager.current = 'login'
-
-
-
+            username = self.username.text
+            password = self.password.text
+            age = self.age.text
+            allergies = self.allergies.text
+            obese = 'Yes' if self.obese_yes.active else 'No'
+            diabetes = 'Yes' if self.diabetes_yes.active else 'No'
+            blood_pressure = 'Yes' if self.blood_pressure_yes.active else 'No'
+            cholesterol = 'Yes' if self.cholesterol_yes.active else 'No'
+            fatty_liver = 'Yes' if self.fatty_liver_yes.active else 'No'
+            kidney_problem = 'Yes' if self.kidney_problem_yes.active else 'No'
+            heart_problem = 'Yes' if self.heart_problem_yes.active else 'No'
+            asthma = 'Yes' if self.asthma_yes.active else 'No'
+            self.user_manager.register_user(username, password, age, allergies, obese, diabetes, blood_pressure, cholesterol, fatty_liver, kidney_problem, heart_problem, asthma)
+            self.manager.current = 'login'
 
 class MainScreen(Screen):
     # This is where your main application code goes
@@ -147,14 +187,15 @@ class UserManager:
                 allergies TEXT, 
                 obese TEXT, 
                 diabetes TEXT, 
-                blood_pressure TEXT, 
+                high_blood_pressure TEXT, 
                 cholesterol TEXT, 
                 kidney_problem TEXT, 
                 heart_problem TEXT, 
                 asthma TEXT, 
                 fatty_liver TEXT
             )
-        """)
+                            """
+                            )
 
     def register_user(self, username, password, age, allergies, obese, diabetes, blood_pressure, cholesterol, kidney_problem, heart_problem, asthma, fatty_liver):
         self.cursor.execute("""
