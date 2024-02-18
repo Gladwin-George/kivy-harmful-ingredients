@@ -76,7 +76,7 @@ class RegisterScreen(Screen):
         self.user_manager = kwargs.get('user_manager')
 
         anchor_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        layout = BoxLayout(orientation='vertical', spacing=20, padding=[40, 40, 40, 50])
+        layout = BoxLayout(orientation='vertical', spacing=20, padding=[40, 20, 40, 40])
 
         # Add these lines to change the background color
         with layout.canvas.before:
@@ -96,14 +96,14 @@ class RegisterScreen(Screen):
 
 
         # Create a BoxLayout for each question
-        self.obese = self.create_question('obese')
-        self.diabetes = self.create_question('diabetes')
-        self.blood_pressure = self.create_question('blood pressure')
-        self.cholesterol = self.create_question('cholesterol')
-        self.fatty_liver = self.create_question('Fatty liver')
-        self.kidney_problem = self.create_question('Kidney problem')
-        self.heart_problem = self.create_question('Heart problem')
-        self.asthma = self.create_question('Asthma')
+        self.obese = self.create_question('Are you obese?')
+        self.diabetes = self.create_question('Do you have diabetes')
+        self.blood_pressure = self.create_question('Do you have high blood pressure')
+        self.cholesterol = self.create_question('Do you have high cholesterol')
+        self.fatty_liver = self.create_question('Do you have Fatty liver')
+        self.kidney_problem = self.create_question('Do you have Kidney problem')
+        self.heart_problem = self.create_question('Do you have Heart problem')
+        self.asthma = self.create_question('Do you have Asthma')
 
         self.register_button = Button(text='Register',background_color='#0096FF', background_normal="")
         self.register_button.bind(on_press=self.register_user)
@@ -211,7 +211,20 @@ class UserManager:
         self.cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
         return self.cursor.fetchone() is not None
 
+from kivy.uix.label import Label
+from kivy.graphics import Color, Rectangle
 
+# class BgLabel(Label):
+#     def __init__(self, **kwargs):
+#         super().__init__(**kwargs)
+#         with self.canvas.before:
+#             Color(1, 0, 0, 1)  # colors range from 0-1 instead of 0-255
+#             self.rect = Rectangle(size=self.size, pos=self.pos)
+#         self.bind(size=self._update_rect, pos=self._update_rect)
+
+#     def _update_rect(self, instance, value):
+#         self.rect.pos = instance.pos
+#         self.rect.size = instance.size
 
 
 class OCRApp(App):
@@ -221,7 +234,7 @@ class OCRApp(App):
         Window.size = (360, 640)  # Set window size for mobile dimensions
         Window.clearcolor = (1, 1, 1, 1)
 
-        layout = BoxLayout(orientation='vertical', padding=[20, 60, 20, 80], spacing=20)
+        layout = BoxLayout(orientation='vertical', padding=[20, 60, 20, 180], spacing=20)
 
         user_manager = UserManager('users.db')
 
@@ -231,26 +244,27 @@ class OCRApp(App):
 
         
         # Create a label for displaying OCR results
-        self.result_scrollview = ScrollView(size_hint=(1, 0.6))
-        self.result_label = Label(text="OCR Results will be displayed here", size_hint_y=None, valign='top', halign='left',color=[0, 0, 0, 1])
+        self.result_scrollview = ScrollView(size_hint=(1, 1))
+        self.result_label = Label(text="Detected Harmful ingredients results will be displayed here:", size_hint_y=None, valign='top', halign='left',color=[0, 0, 0, 1])
         self.result_label.bind(width=lambda instance, value: setattr(self.result_label, 'text_size', (value, None)))
         self.result_label.bind(texture_size=self.result_label.setter('size'))
 
         self.result_scrollview.add_widget(self.result_label)
         layout.add_widget(self.result_scrollview)
-                    
+
+
         # Create a button for selecting an image
-        self.select_image_button = Button(text="Select Image", size_hint=(1, 0.2),background_color='#0437F2', background_normal="")
+        self.select_image_button = Button(text="Select product ingredients Image", size_hint=(1, 0.2), background_color='#0437F2', background_normal="")
         self.select_image_button.bind(on_press=self.select_image)
         layout.add_widget(self.select_image_button)
 
         # Create a button for triggering OCR
-        self.ocr_button = Button(text="Run OCR", size_hint=(1, 0.2), background_color='#0437F2', background_normal="")
+        self.ocr_button = Button(text="Analyse the ingredients", size_hint=(1, 0.2), background_color='#0437F2', background_normal="")
         self.ocr_button.bind(on_press=self.run_ocr)
         layout.add_widget(self.ocr_button)
 
         # Create a button for sending email
-        self.email_button = Button(text="Send Email", size_hint=(1, 0.2), background_color='#32CD32', background_normal="")
+        self.email_button = Button(text="Click to confirm with doctor", size_hint=(1, 0.2), background_color='#32CD32', background_normal="")
         self.email_button.bind(on_press=self.send_email)
         layout.add_widget(self.email_button)
 
@@ -283,10 +297,11 @@ class OCRApp(App):
     def select_image(self, instance):
         # Create and open file chooser
         self.file_chooser = FileChooserListView()
+
         self.file_chooser.path = '.'  # Set the initial path
         self.file_chooser.filters = ["*.jpg", "*.png", "*.jpeg"]
         self.file_chooser.bind(on_submit=self.load_image)
-        self.select_image_button.parent.add_widget(self.file_chooser)  # Add file chooser to layout
+        self.select_image_button.parent.parent.add_widget(self.file_chooser)  # Add file chooser to main layout
 
     def load_image(self, instance, selection, touch):
         # Load selected image
@@ -299,7 +314,7 @@ class OCRApp(App):
         self.result_label.text = f"Image '{selected_file_name}' selected successfully."
 
         # Remove file chooser from layout
-        self.select_image_button.parent.remove_widget(self.file_chooser)
+        self.select_image_button.parent.parent.remove_widget(self.file_chooser)
 
     def run_ocr(self, instance):
         try:

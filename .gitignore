@@ -166,3 +166,8 @@ cython_debug/
 # images folder
 images/
 
+#layout notes txt
+box layout.txt
+
+#tempCodeRunnerFile.py
+tempCodeRunnerFile.py
