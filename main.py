@@ -221,7 +221,7 @@ class OCRApp(App):
         Window.size = (360, 640)  # Set window size for mobile dimensions
         Window.clearcolor = (1, 1, 1, 1)
 
-        layout = BoxLayout(orientation='vertical', padding=[20, 20, 20, 120], spacing=20)
+        layout = BoxLayout(orientation='vertical', padding=[20, 60, 20, 80], spacing=20)
 
         user_manager = UserManager('users.db')
 
@@ -240,17 +240,17 @@ class OCRApp(App):
         layout.add_widget(self.result_scrollview)
                     
         # Create a button for selecting an image
-        self.select_image_button = Button(text="Select Image", size_hint=(1, 0.2))
+        self.select_image_button = Button(text="Select Image", size_hint=(1, 0.2),background_color='#0437F2', background_normal="")
         self.select_image_button.bind(on_press=self.select_image)
         layout.add_widget(self.select_image_button)
 
         # Create a button for triggering OCR
-        self.ocr_button = Button(text="Run OCR", size_hint=(1, 0.2), background_color='#0096FF', background_normal="")
+        self.ocr_button = Button(text="Run OCR", size_hint=(1, 0.2), background_color='#0437F2', background_normal="")
         self.ocr_button.bind(on_press=self.run_ocr)
         layout.add_widget(self.ocr_button)
 
         # Create a button for sending email
-        self.email_button = Button(text="Send Email", size_hint=(1, 0.2))
+        self.email_button = Button(text="Send Email", size_hint=(1, 0.2), background_color='#32CD32', background_normal="")
         self.email_button.bind(on_press=self.send_email)
         layout.add_widget(self.email_button)
 
