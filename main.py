@@ -18,6 +18,9 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.spinner import Spinner
 from kivy.core.window import Window
 
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 
 
@@ -246,10 +249,36 @@ class OCRApp(App):
         self.ocr_button.bind(on_press=self.run_ocr)
         layout.add_widget(self.ocr_button)
 
+        # Create a button for sending email
+        self.email_button = Button(text="Send Email", size_hint=(1, 0.2))
+        self.email_button.bind(on_press=self.send_email)
+        layout.add_widget(self.email_button)
+
         # Add the main screen to the screen manager
         sm.add_widget(MainScreen(name='main', children=[layout]))
 
         return sm
+    
+    def send_email(self, instance):
+        # Set up the SMTP server
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+
+        # Login to the email account
+        server.login("gladwinfiverr@gmail.com", "xfln ajez ektr gjru")
+
+        # Compose the email
+        msg = MIMEMultipart()
+        msg['From'] = "gladwinfiverr@gmail.com"
+        msg['To'] = "gladwinfiverr@gmail.com"
+        msg['Subject'] = "OCR Result"
+        body = self.result_label.text  # Assuming this is the OCR result you want to send
+        msg.attach(MIMEText(body, 'plain'))
+
+        # Send the email
+        server.send_message(msg)
+        server.quit()
+        print("Email sent successfully")
 
     def select_image(self, instance):
         # Create and open file chooser
