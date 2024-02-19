@@ -130,20 +130,21 @@ class RegisterScreen(Screen):
 
 
     def create_question(self, question_text):
-        layout = BoxLayout(orientation='horizontal',spacing=20)  # Change this line
-        layout.add_widget(Label(text=question_text, color=[1, 1, 1, 1]))
-        yes_no_layout = BoxLayout(orientation='horizontal')  # Add this line
-
+        layout = BoxLayout(orientation='horizontal', spacing=20)
+        question_label = Label(text=question_text, color=[1, 1, 1, 1], halign='left', size_hint_x=0.7)
+        question_label.bind(width=lambda *x: question_label.setter('text_size')(question_label, (question_label.width, None)))
+        layout.add_widget(question_label)
+        yes_no_layout = BoxLayout(orientation='horizontal', size_hint_x=0.3, spacing=30)
 
         yes_checkbox = CheckBox(group=question_text)
         no_checkbox = CheckBox(group=question_text)
 
-        yes_no_layout.add_widget(Label(text='Yes', color=[1, 1, 1, 1]))  # Add label for 'Yes'
+        yes_no_layout.add_widget(Label(text='Yes', color=[1, 1, 1, 1]))
         yes_no_layout.add_widget(yes_checkbox)
-        yes_no_layout.add_widget(Label(text='No', color=[1, 1, 1, 1]))  # Add label for 'No'
+        yes_no_layout.add_widget(Label(text='No', color=[1, 1, 1, 1]))
         yes_no_layout.add_widget(no_checkbox)
 
-        layout.add_widget(yes_no_layout)  # Add this line
+        layout.add_widget(yes_no_layout)
         setattr(self, question_text.lower().replace(' ', '_') + '_yes', yes_checkbox)
         setattr(self, question_text.lower().replace(' ', '_') + '_no', no_checkbox)
         return layout
