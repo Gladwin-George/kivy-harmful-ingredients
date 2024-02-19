@@ -1,8 +1,8 @@
 import os
-import csv
 import cv2
 import sqlite3
 import easyocr
+import smtplib
 import numpy as np
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -18,7 +18,6 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.spinner import Spinner
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.widget import Widget
-import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from kivy.uix.popup import Popup
