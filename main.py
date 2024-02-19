@@ -130,7 +130,7 @@ class RegisterScreen(Screen):
 
 
     def create_question(self, question_text):
-        layout = BoxLayout(orientation='vertical',spacing=20)  # Change this line
+        layout = BoxLayout(orientation='horizontal',spacing=20)  # Change this line
         layout.add_widget(Label(text=question_text, color=[1, 1, 1, 1]))
         yes_no_layout = BoxLayout(orientation='horizontal')  # Add this line
 
