@@ -16,11 +16,12 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import ObjectProperty
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.spinner import Spinner
-from kivy.core.window import Window
-
+from kivy.uix.checkbox import CheckBox
+from kivy.uix.widget import Widget
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from kivy.uix.popup import Popup
 
 
 
@@ -64,9 +65,6 @@ class LoginScreen(Screen):
             
 
 
-from kivy.uix.checkbox import CheckBox
-from kivy.graphics import Color, Rectangle
-
 class RegisterScreen(Screen):
 
     user_manager = ObjectProperty(None)
@@ -80,7 +78,7 @@ class RegisterScreen(Screen):
 
         # Add these lines to change the background color
         with layout.canvas.before:
-            Color(0, 74/255, 173/255, 1)   # Set the color (RGB and alpha)
+            Color(0,0,0,1)#(0, 74/255, 173/255, 1)   # Set the color (RGB and alpha)
             self.rect = Rectangle(size=layout.size, pos=layout.pos)
         layout.bind(size=self._update_rect, pos=self._update_rect)
 
@@ -96,7 +94,7 @@ class RegisterScreen(Screen):
 
 
         # Create a BoxLayout for each question
-        self.obese = self.create_question('Are you obese?')
+        self.obese = self.create_question('Are you obese')
         self.diabetes = self.create_question('Do you have diabetes')
         self.blood_pressure = self.create_question('Do you have high blood pressure')
         self.cholesterol = self.create_question('Do you have high cholesterol')
@@ -155,14 +153,35 @@ class RegisterScreen(Screen):
             password = self.password.text
             age = self.age.text
             allergies = self.allergies.text
-            obese = 'Yes' if self.obese_yes.active else 'No'
-            diabetes = 'Yes' if self.diabetes_yes.active else 'No'
-            blood_pressure = 'Yes' if self.blood_pressure_yes.active else 'No'
-            cholesterol = 'Yes' if self.cholesterol_yes.active else 'No'
-            fatty_liver = 'Yes' if self.fatty_liver_yes.active else 'No'
-            kidney_problem = 'Yes' if self.kidney_problem_yes.active else 'No'
-            heart_problem = 'Yes' if self.heart_problem_yes.active else 'No'
-            asthma = 'Yes' if self.asthma_yes.active else 'No'
+            obese = 'Yes' if self.are_you_obese_yes.active else 'No'
+            diabetes = 'Yes' if self.do_you_have_diabetes_yes.active else 'No'
+            blood_pressure = 'Yes' if self.do_you_have_high_blood_pressure_yes.active else 'No'
+            cholesterol = 'Yes' if self.do_you_have_high_cholesterol_yes.active else 'No'
+            fatty_liver = 'Yes' if self.do_you_have_fatty_liver_yes.active else 'No'
+            kidney_problem = 'Yes' if self.do_you_have_kidney_problem_yes.active else 'No'
+            heart_problem = 'Yes' if self.do_you_have_heart_problem_yes.active else 'No'
+            asthma = 'Yes' if self.do_you_have_asthma_yes.active else 'No'
+
+            # Check if any of the fields are empty
+            if not username or not password or not age or not allergies or \
+            obese == 'No' and diabetes == 'No' and blood_pressure == 'No' and \
+            cholesterol == 'No' and fatty_liver == 'No' and kidney_problem == 'No' and \
+            heart_problem == 'No' and asthma == 'No':
+                
+                close_button = Button(text='Click to complete the registration', color=[1,1, 1, 1],background_color='#0096FF', background_normal="")  
+                content = BoxLayout(orientation='vertical')
+                content.add_widget(Label(text='Please fill all the fields', color=[1, 1, 1, 1])) 
+                content.add_widget(close_button)
+
+                popup = Popup(title='Registration Error',
+                            content=content,
+                            size_hint=(None, None), size=(400, 200))
+
+                close_button.bind(on_press=popup.dismiss)
+
+                popup.open()
+                return
+            
             self.user_manager.register_user(username, password, age, allergies, obese, diabetes, blood_pressure, cholesterol, fatty_liver, kidney_problem, heart_problem, asthma)
             self.manager.current = 'login'
 
