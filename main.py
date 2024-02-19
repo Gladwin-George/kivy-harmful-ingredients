@@ -317,16 +317,16 @@ class OCRApp(App):
         text_results = reader.readtext(image_path)
         extracted_text = ' '.join([result[1] for result in text_results])
 
-        # Step 2: Load harmful ingredients from CSV into a dictionary
+        # Step 2: Load harmful ingredients from SQLite database into a dictionary
         harmful_ingredients_dict = {}
-        with open('harmful_ingredients.csv', 'r') as file:
-            csv_reader = csv.reader(file)
-            next(csv_reader)  # Skip the first row (headings)
-            for row in csv_reader:
-                if len(row) >= 2 and row[0] and row[1]:  # Check if both columns have data
-                    ingredient_name = row[0].strip()  # Assuming ingredient name is in the first column
-                    harmful_ingredient_description = row[1].strip()  # Assuming harmful ingredient description is in the second column
-                    harmful_ingredients_dict[ingredient_name.lower()] = harmful_ingredient_description
+        conn = sqlite3.connect('harmful_ingredients.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM harmful_ingredients")
+        for row in cursor.fetchall():
+            ingredient_name = row[0].strip()  # Assuming ingredient name is in the first column
+            harmful_ingredient_description = row[1].strip()  # Assuming harmful ingredient description is in the second column
+            harmful_ingredients_dict[ingredient_name.lower()] = harmful_ingredient_description
+        conn.close()
 
         # Step 3: Identify harmful ingredients
         found_harmful_ingredients = []
